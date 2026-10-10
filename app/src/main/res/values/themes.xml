@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.QuestRings.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#000000</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_questrings_splash</item>
+        <item name="postSplashScreenTheme">@style/Theme.QuestRings</item>
+    </style>
+
+    <style name="Theme.QuestRings" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">#101014</item>
+        <item name="android:windowBackground">#000000</item>
+    </style>
+</resources>
