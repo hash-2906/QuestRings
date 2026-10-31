@@ -174,7 +174,6 @@ function App() {
                     </button>
                 </nav>
                 <div className="date"><CalendarDays size={15} />{date}</div>
-                <button className="reset" onClick={reset}><RotateCcw size={14} />Reset day</button>
             </header>
 
             <section className="topbar">

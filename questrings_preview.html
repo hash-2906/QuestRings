@@ -1,0 +1,2029 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuestRings — Full Interactive Android Preview</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg-app: #F5F5F5;
+      --bg-surface: #FFFFFF;
+      --bg-surface-elevated: #F8F9FA;
+      --text-primary: #111116;
+      --text-secondary: #6E6E73;
+      --text-muted: #8E8E93;
+      --border-subtle: #E5E5EA;
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      --card-border: 1px solid #E5E5EA;
+      --chip-bg: #EFEFF4;
+      --modal-bg: rgba(0, 0, 0, 0.4);
+      --purple: #7D5CFF;
+      --purple-hover: #6B49F2;
+      --purple-muted: #EFEAFF;
+      --green: #30D158;
+      --green-muted: #E8FAEF;
+      --red: #FF453A;
+      --red-muted: #FFEBEA;
+      --blue: #0A84FF;
+      --blue-muted: #E6F2FF;
+      --gold: #FFD60A;
+      --gold-muted: #FFFBE6;
+    }
+
+    [data-theme="dark"] {
+      --bg-app: #111116;
+      --bg-surface: #1C1C1E;
+      --bg-surface-elevated: #242428;
+      --text-primary: #F5F5F7;
+      --text-secondary: #98989D;
+      --text-muted: #636366;
+      --border-subtle: #2C2C2E;
+      --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+      --card-border: 1px solid #2C2C2E;
+      --chip-bg: #2C2C2E;
+      --modal-bg: rgba(0, 0, 0, 0.75);
+      --purple: #7D5CFF;
+      --purple-hover: #8F72FF;
+      --purple-muted: rgba(125, 92, 255, 0.15);
+      --green: #30D158;
+      --green-muted: rgba(48, 209, 88, 0.15);
+      --red: #FF453A;
+      --red-muted: rgba(255, 69, 58, 0.15);
+      --blue: #0A84FF;
+      --blue-muted: rgba(10, 132, 255, 0.15);
+      --gold: #FFD60A;
+      --gold-muted: rgba(255, 214, 10, 0.15);
+    }
+
+    body {
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 440px;
+      height: 900px;
+      background: var(--bg-app);
+      border-radius: 44px;
+      border: 10px solid #222228;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(125, 92, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @media (max-width: 640px) {
+      .phone-container {
+        height: 100vh;
+        max-width: 100%;
+        border-radius: 0;
+        border: none;
+      }
+    }
+
+    .screen-body {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-bottom: 96px;
+    }
+    .screen-body::-webkit-scrollbar { display: none; }
+
+    .quest-card {
+      background: var(--bg-surface);
+      border-radius: 24px;
+      border: var(--card-border);
+      box-shadow: var(--card-shadow);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.25s ease;
+    }
+
+    .pill-btn {
+      border-radius: 9999px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    .pill-btn:active {
+      transform: scale(0.96);
+    }
+
+    .chip {
+      border-radius: 12px;
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    /* Floating XP Notification Animation */
+    @keyframes floatUpFade {
+      0% { transform: translateY(10px) scale(0.9); opacity: 0; }
+      20% { transform: translateY(0) scale(1); opacity: 1; }
+      80% { transform: translateY(-20px) scale(1); opacity: 1; }
+      100% { transform: translateY(-35px) scale(0.9); opacity: 0; }
+    }
+    .xp-toast {
+      animation: floatUpFade 1.8s ease-out forwards;
+    }
+
+    /* SVG Ring Animations */
+    .ring-circle {
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    /* Sheet animation */
+    .sheet-up {
+      animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    /* Scale bounce for reaction chips */
+    @keyframes bounceScale {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.35); }
+      70% { transform: scale(0.92); }
+      100% { transform: scale(1); }
+    }
+    .bounce-active {
+      animation: bounceScale 0.35s ease;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-0 sm:p-6 bg-slate-950">
+
+  <!-- Main Simulator Frame -->
+  <div class="phone-container" id="phoneContainer">
+
+    <!-- Top Status Bar & Notch -->
+    <div class="pt-3 px-6 pb-2 flex justify-between items-center text-xs font-semibold select-none z-20" style="color: var(--text-secondary);">
+      <span id="currentTime">09:41</span>
+      <div class="w-24 h-4 rounded-full bg-neutral-800 self-center"></div>
+      <div class="flex items-center space-x-1.5">
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zm-2.829 2.828a3 3 0 00-4.242 0 1 1 0 01-1.415-1.414 5 5 0 017.072 0 1 1 0 01-1.415 1.414zM9 16a1 1 0 112 0 1 1 0 01-2 0z" clip-rule="evenodd"/></svg>
+        <span class="text-[11px]">100%</span>
+      </div>
+    </div>
+
+    <!-- App Top Bar (QuestTopBar) -->
+    <header id="appHeader" class="px-5 py-3 flex justify-between items-center z-10 border-b" style="border-color: var(--border-subtle); background: var(--bg-surface);">
+      <div class="flex items-center space-x-2.5">
+        <div id="headerAvatarMark" class="w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-white shadow-sm" style="background: var(--purple);">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight leading-tight" style="color: var(--text-primary);">QuestRings</h1>
+          <p class="text-xs font-medium" id="headerUserSub" style="color: var(--text-secondary);">Level 4 Adventurer</p>
+        </div>
+      </div>
+
+      <!-- Controls: Streak Pill & Theme Toggle -->
+      <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold" style="background: var(--gold-muted); color: var(--gold); border: 1px solid var(--gold);">
+          <span>🔥</span>
+          <span id="streakCount">7d</span>
+        </div>
+
+        <!-- Light / Dark Persistent Toggle Button -->
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="w-9 h-9 rounded-full flex items-center justify-center transition-transform active:scale-90" style="background: var(--chip-bg); color: var(--text-primary);" title="Toggle Light/Dark Theme">
+          <svg id="themeIconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="themeIconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Floating XP Toast -->
+    <div id="xpToastContainer" class="absolute top-20 inset-x-0 flex justify-center pointer-events-none z-40"></div>
+
+    <!-- ============================================== -->
+    <!-- AUTHENTICATION VIEW (When Logged Out)          -->
+    <!-- ============================================== -->
+    <div id="authView" class="screen-body px-5 pt-6 hidden">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 rounded-3xl mx-auto flex items-center justify-center text-white text-2xl font-black shadow-lg mb-3" style="background: var(--purple);">
+          ⚡
+        </div>
+        <h2 class="text-2xl font-black tracking-tight" style="color: var(--text-primary);">Enter QuestRings</h2>
+        <p class="text-xs mt-1" style="color: var(--text-secondary);">Gamify your habits, build party streaks, level up.</p>
+      </div>
+
+      <div class="quest-card p-5">
+        <!-- Auth Tab Switcher -->
+        <div class="flex rounded-full p-1 mb-5" style="background: var(--chip-bg);">
+          <button onclick="setAuthTab('login')" id="authTabLogin" class="pill-btn flex-1 py-2 text-xs font-bold rounded-full transition-all" style="background: var(--purple); color: white;">Sign In</button>
+          <button onclick="setAuthTab('register')" id="authTabRegister" class="pill-btn flex-1 py-2 text-xs font-bold rounded-full transition-all" style="color: var(--text-secondary);">Register Legend</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="space-y-3.5">
+          <div>
+            <label class="text-xs font-bold block mb-1" style="color: var(--text-secondary);">Email Address</label>
+            <input id="loginEmail" type="email" value="alex@questrings.com" class="w-full px-3.5 py-2.5 rounded-xl text-sm border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+          </div>
+          <div>
+            <label class="text-xs font-bold block mb-1" style="color: var(--text-secondary);">Password</label>
+            <input id="loginPassword" type="password" value="password123" class="w-full px-3.5 py-2.5 rounded-xl text-sm border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+          </div>
+          <button onclick="handleLogin()" class="pill-btn w-full py-3 text-sm font-bold text-white mt-2 shadow-sm" style="background: var(--purple);">
+            Sign In to QuestRings
+          </button>
+
+          <!-- Known Recognized Accounts Picker -->
+          <div class="pt-3 border-t mt-4" style="border-color: var(--border-subtle);">
+            <span class="text-[11px] font-bold uppercase tracking-wider block mb-2" style="color: var(--text-secondary);">Quick Switch Recognized Accounts:</span>
+            <div class="space-y-2" id="recognizedAccountsList"></div>
+          </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerForm" class="space-y-3.5 hidden">
+          <div>
+            <label class="text-xs font-bold block mb-1" style="color: var(--text-secondary);">Legend Name (Display Name)</label>
+            <input id="regDisplayName" type="text" placeholder="e.g. ShadowBlade, Athena" class="w-full px-3.5 py-2.5 rounded-xl text-sm border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+          </div>
+          <div>
+            <label class="text-xs font-bold block mb-1" style="color: var(--text-secondary);">Email</label>
+            <input id="regEmail" type="email" placeholder="legend@questrings.com" class="w-full px-3.5 py-2.5 rounded-xl text-sm border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+          </div>
+          <div>
+            <label class="text-xs font-bold block mb-1" style="color: var(--text-secondary);">Password</label>
+            <input id="regPassword" type="password" placeholder="At least 6 characters" class="w-full px-3.5 py-2.5 rounded-xl text-sm border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+          </div>
+          <div>
+            <label class="text-xs font-bold block mb-1" style="color: var(--text-secondary);">Avatar Color Sigil</label>
+            <div class="flex space-x-2" id="regAvatarColorRow">
+              <button onclick="selectAvatarColor('#7D5CFF')" class="w-8 h-8 rounded-full border-2 border-white ring-2 ring-[var(--purple)]" style="background: #7D5CFF;" data-color="#7D5CFF"></button>
+              <button onclick="selectAvatarColor('#30D158')" class="w-8 h-8 rounded-full" style="background: #30D158;" data-color="#30D158"></button>
+              <button onclick="selectAvatarColor('#FF453A')" class="w-8 h-8 rounded-full" style="background: #FF453A;" data-color="#FF453A"></button>
+              <button onclick="selectAvatarColor('#0A84FF')" class="w-8 h-8 rounded-full" style="background: #0A84FF;" data-color="#0A84FF"></button>
+              <button onclick="selectAvatarColor('#FFD60A')" class="w-8 h-8 rounded-full" style="background: #FFD60A;" data-color="#FFD60A"></button>
+            </div>
+          </div>
+          <button onclick="handleRegister()" class="pill-btn w-full py-3 text-sm font-bold text-white mt-2 shadow-sm" style="background: var(--green);">
+            Create Legend Account
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MAIN APPLICATION VIEW (When Logged In)         -->
+    <!-- ============================================== -->
+    <main class="screen-body px-5 pt-4" id="mainAppView">
+
+      <!-- ============================================== -->
+      <!-- TAB 1: HOME (Dashboard & Concentric Rings)      -->
+      <!-- ============================================== -->
+      <section id="tab-home" class="space-y-4">
+        <!-- 1. Concentric Hero Rings Card -->
+        <article class="quest-card p-5">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider" style="color: var(--purple);">Daily Focus</span>
+              <h2 class="text-lg font-bold" style="color: var(--text-primary);">Concentric Rings</h2>
+            </div>
+            <div class="px-2.5 py-1 rounded-full text-xs font-bold" style="background: var(--purple-muted); color: var(--purple);" id="ringsClosedBadge">
+              1 / 3 Closed
+            </div>
+          </div>
+
+          <!-- Interactive SVG Concentric Rings Canvas -->
+          <div class="relative flex items-center justify-center my-3">
+            <svg class="w-48 h-48" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="82" fill="none" stroke="currentColor" stroke-width="12" style="color: var(--red-muted);" />
+              <circle id="ringVitality" class="ring-circle" cx="100" cy="100" r="82" fill="none" stroke="var(--red)" stroke-width="12" stroke-linecap="round" stroke-dasharray="515.22" stroke-dashoffset="171.7" />
+
+              <circle cx="100" cy="100" r="64" fill="none" stroke="currentColor" stroke-width="12" style="color: var(--green-muted);" />
+              <circle id="ringIntellect" class="ring-circle" cx="100" cy="100" r="64" fill="none" stroke="var(--green)" stroke-width="12" stroke-linecap="round" stroke-dasharray="402.12" stroke-dashoffset="0" />
+
+              <circle cx="100" cy="100" r="46" fill="none" stroke="currentColor" stroke-width="12" style="color: var(--blue-muted);" />
+              <circle id="ringDiscipline" class="ring-circle" cx="100" cy="100" r="46" fill="none" stroke="var(--blue)" stroke-width="12" stroke-linecap="round" stroke-dasharray="289.02" stroke-dashoffset="144.5" />
+            </svg>
+
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+              <span class="text-2xl font-black" id="centerScoreVal" style="color: var(--text-primary);">78%</span>
+              <span class="text-[11px] font-semibold" style="color: var(--text-secondary);">Momentum</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 pt-2 border-t" style="border-color: var(--border-subtle);">
+            <div class="text-center">
+              <div class="flex items-center justify-center space-x-1.5 text-xs font-semibold mb-0.5" style="color: var(--red);">
+                <span class="w-2 h-2 rounded-full" style="background: var(--red);"></span>
+                <span>Vitality</span>
+              </div>
+              <span class="text-sm font-bold" id="labelVitalityPct">66%</span>
+            </div>
+            <div class="text-center">
+              <div class="flex items-center justify-center space-x-1.5 text-xs font-semibold mb-0.5" style="color: var(--green);">
+                <span class="w-2 h-2 rounded-full" style="background: var(--green);"></span>
+                <span>Intellect</span>
+              </div>
+              <span class="text-sm font-bold" id="labelIntellectPct">100%</span>
+            </div>
+            <div class="text-center">
+              <div class="flex items-center justify-center space-x-1.5 text-xs font-semibold mb-0.5" style="color: var(--blue);">
+                <span class="w-2 h-2 rounded-full" style="background: var(--blue);"></span>
+                <span>Discipline</span>
+              </div>
+              <span class="text-sm font-bold" id="labelDisciplinePct">50%</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- 2. Today's XP Card -->
+        <article class="quest-card p-5">
+          <div class="flex justify-between items-center mb-2">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">Today's Progress</span>
+              <div class="flex items-baseline space-x-2">
+                <span class="text-3xl font-extrabold tracking-tight" id="todayXpVal" style="color: var(--purple);">1,750</span>
+                <span class="text-sm font-bold" style="color: var(--text-secondary);">/ 2,000 XP</span>
+              </div>
+            </div>
+            <div class="px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1" style="background: var(--purple-muted); color: var(--purple);">
+              <span>⚡</span>
+              <span>1.5x Streak</span>
+            </div>
+          </div>
+
+          <div class="w-full h-3 rounded-full overflow-hidden mt-3" style="background: var(--chip-bg);">
+            <div id="todayXpBar" class="h-full rounded-full transition-all duration-500" style="background: var(--purple); width: 87.5%;"></div>
+          </div>
+
+          <div class="flex justify-between items-center mt-2.5 text-xs" style="color: var(--text-secondary);">
+            <span id="cardLevelDesc">Level 4 Adventurer</span>
+            <span>250 XP to Next Level</span>
+          </div>
+        </article>
+
+        <!-- 3. Quick Actions Pill Row -->
+        <div class="flex items-center space-x-2 overflow-x-auto py-1">
+          <button onclick="openModal('addHabitModal')" class="pill-btn px-4 py-2 text-xs text-white flex items-center space-x-1.5 shrink-0" style="background: var(--purple);">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            <span>+ Habit</span>
+          </button>
+          <button onclick="openModal('addTaskModal')" class="pill-btn px-4 py-2 text-xs flex items-center space-x-1.5 shrink-0" style="background: var(--chip-bg); color: var(--text-primary);">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            <span>+ Task</span>
+          </button>
+          <button onclick="openModal('createRoomModal')" class="pill-btn px-4 py-2 text-xs flex items-center space-x-1.5 shrink-0" style="background: var(--chip-bg); color: var(--text-primary);">
+            <span>🛡️</span>
+            <span>+ Room</span>
+          </button>
+          <button onclick="openModal('leaderboardModal')" class="pill-btn px-4 py-2 text-xs flex items-center space-x-1.5 shrink-0" style="background: var(--chip-bg); color: var(--text-primary);">
+            <span>🏆</span>
+            <span>Ranks</span>
+          </button>
+        </div>
+
+        <!-- 4. Interactive Quests List -->
+        <article class="quest-card p-5">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="font-bold text-base" style="color: var(--text-primary);">Active Habits</h3>
+            <span class="text-xs" style="color: var(--text-secondary);">Tap to complete & close rings</span>
+          </div>
+
+          <div class="flex space-x-1.5 mb-3">
+            <button onclick="filterHabits('all')" class="chip px-3 py-1 font-semibold text-xs rounded-full transition-colors" id="filter-all" style="background: var(--purple); color: white;">All</button>
+            <button onclick="filterHabits('VITALITY')" class="chip px-3 py-1 font-semibold text-xs rounded-full transition-colors" id="filter-VITALITY" style="background: var(--chip-bg); color: var(--text-secondary);">Vitality</button>
+            <button onclick="filterHabits('INTELLECT')" class="chip px-3 py-1 font-semibold text-xs rounded-full transition-colors" id="filter-INTELLECT" style="background: var(--chip-bg); color: var(--text-secondary);">Intellect</button>
+            <button onclick="filterHabits('DISCIPLINE')" class="chip px-3 py-1 font-semibold text-xs rounded-full transition-colors" id="filter-DISCIPLINE" style="background: var(--chip-bg); color: var(--text-secondary);">Discipline</button>
+          </div>
+
+          <div class="space-y-2.5" id="habitsListContainer"></div>
+        </article>
+
+        <!-- 5. 7-Day Momentum Strip -->
+        <article class="quest-card p-4">
+          <span class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">Past 7 Days Momentum</span>
+          <div class="grid grid-cols-7 gap-2 mt-3 text-center">
+            <div class="p-2 rounded-xl" style="background: var(--chip-bg);"><span class="text-[10px] font-bold block" style="color: var(--text-secondary);">M</span><span class="text-xs font-bold block mt-0.5">100%</span><span class="text-xs mt-1 block">🟢</span></div>
+            <div class="p-2 rounded-xl" style="background: var(--chip-bg);"><span class="text-[10px] font-bold block" style="color: var(--text-secondary);">T</span><span class="text-xs font-bold block mt-0.5">100%</span><span class="text-xs mt-1 block">🟢</span></div>
+            <div class="p-2 rounded-xl" style="background: var(--chip-bg);"><span class="text-[10px] font-bold block" style="color: var(--text-secondary);">W</span><span class="text-xs font-bold block mt-0.5">85%</span><span class="text-xs mt-1 block">🟡</span></div>
+            <div class="p-2 rounded-xl" style="background: var(--chip-bg);"><span class="text-[10px] font-bold block" style="color: var(--text-secondary);">T</span><span class="text-xs font-bold block mt-0.5">100%</span><span class="text-xs mt-1 block">🟢</span></div>
+            <div class="p-2 rounded-xl" style="background: var(--chip-bg);"><span class="text-[10px] font-bold block" style="color: var(--text-secondary);">F</span><span class="text-xs font-bold block mt-0.5">100%</span><span class="text-xs mt-1 block">🟢</span></div>
+            <div class="p-2 rounded-xl" style="background: var(--chip-bg);"><span class="text-[10px] font-bold block" style="color: var(--text-secondary);">S</span><span class="text-xs font-bold block mt-0.5">70%</span><span class="text-xs mt-1 block">🟡</span></div>
+            <div class="p-2 rounded-xl border-2" style="background: var(--purple-muted); border-color: var(--purple);"><span class="text-[10px] font-bold block" style="color: var(--purple);">TODAY</span><span class="text-xs font-bold block mt-0.5" id="momentumTodayVal">78%</span><span class="text-xs mt-1 block">🔥</span></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 2: TASKS (List & Calendar Agenda)           -->
+      <!-- ============================================== -->
+      <section id="tab-tasks" class="space-y-4 hidden">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-bold" style="color: var(--text-primary);">Tasks & Agenda</h2>
+            <p class="text-xs" style="color: var(--text-secondary);">Manage deadlines & timed quests</p>
+          </div>
+          <div class="flex rounded-full p-1" style="background: var(--chip-bg);">
+            <button onclick="setTaskView('list')" id="taskViewListBtn" class="pill-btn px-3 py-1 text-xs font-bold rounded-full transition-all" style="background: var(--purple); color: white;">List</button>
+            <button onclick="setTaskView('calendar')" id="taskViewCalBtn" class="pill-btn px-3 py-1 text-xs font-bold rounded-full transition-all" style="color: var(--text-secondary);">Calendar</button>
+          </div>
+        </div>
+
+        <div id="calendarAgendaStrip" class="quest-card p-4 hidden">
+          <div class="flex justify-between items-center mb-3">
+            <span class="font-bold text-sm" style="color: var(--text-primary);">October 2026</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background: var(--purple-muted); color: var(--purple);">Week 42</span>
+          </div>
+          <div class="grid grid-cols-7 gap-1.5 text-center text-xs">
+            <div class="p-1.5 rounded-xl" style="color: var(--text-muted);">15<br><span class="text-[9px]">Thu</span></div>
+            <div class="p-1.5 rounded-xl" style="color: var(--text-muted);">16<br><span class="text-[9px]">Fri</span></div>
+            <div class="p-1.5 rounded-xl" style="color: var(--text-muted);">17<br><span class="text-[9px]">Sat</span></div>
+            <div class="p-1.5 rounded-xl font-bold text-white shadow-sm" style="background: var(--purple);">18<br><span class="text-[9px]">Sun</span></div>
+            <div class="p-1.5 rounded-xl" style="color: var(--text-secondary);">19<br><span class="text-[9px]">Mon</span></div>
+            <div class="p-1.5 rounded-xl" style="color: var(--text-secondary);">20<br><span class="text-[9px]">Tue</span></div>
+            <div class="p-1.5 rounded-xl" style="color: var(--text-secondary);">21<br><span class="text-[9px]">Wed</span></div>
+          </div>
+        </div>
+
+        <div class="space-y-3" id="tasksListContainer"></div>
+
+        <button onclick="openModal('addTaskModal')" class="pill-btn w-full py-3.5 text-sm font-bold text-white flex items-center justify-center space-x-2 shadow-sm" style="background: var(--purple);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          <span>Create New Task</span>
+        </button>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 3: ROOMS (Chambers, Create, Join, Open)    -->
+      <!-- ============================================== -->
+      <section id="tab-rooms" class="space-y-4 hidden">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-bold" style="color: var(--text-primary);">Quest Chambers</h2>
+            <p class="text-xs" style="color: var(--text-secondary);">Party up with guilds & challenge together</p>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            <button onclick="openModal('joinRoomModal')" class="pill-btn px-3 py-1.5 text-xs font-bold rounded-full" style="background: var(--blue-muted); color: var(--blue); border: 1px solid var(--blue);">
+              <span>🗝️ Join</span>
+            </button>
+            <button onclick="openModal('createRoomModal')" class="pill-btn px-3 py-1.5 text-xs font-bold rounded-full text-white" style="background: var(--purple);">
+              <span>+ Create</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Rooms Filter Tabs: My Rooms vs Joined Rooms -->
+        <div class="flex rounded-full p-1" style="background: var(--chip-bg);">
+          <button onclick="setRoomsTab('my')" id="roomsTabMy" class="pill-btn flex-1 py-1.5 text-xs font-bold rounded-full transition-all" style="background: var(--purple); color: white;">My Chambers (<span id="myRoomsCount">2</span>)</button>
+          <button onclick="setRoomsTab('joined')" id="roomsTabJoined" class="pill-btn flex-1 py-1.5 text-xs font-bold rounded-full transition-all" style="color: var(--text-secondary);">Joined Chambers (<span id="joinedRoomsCount">2</span>)</button>
+        </div>
+
+        <!-- Rooms List Container (Clickable Cards) -->
+        <div class="space-y-3.5" id="roomsListContainer"></div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 4: SOCIAL (Community Feed & Friends)       -->
+      <!-- ============================================== -->
+      <section id="tab-social" class="space-y-4 hidden">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-bold" style="color: var(--text-primary);">Adventurers Social</h2>
+            <p class="text-xs" style="color: var(--text-secondary);">Cheer party mates & track activity</p>
+          </div>
+          <button onclick="openModal('leaderboardModal')" class="pill-btn px-3 py-1.5 text-xs font-bold rounded-full flex items-center space-x-1" style="background: var(--gold-muted); color: var(--gold); border: 1px solid var(--gold);">
+            <span>🏆 Global Ranks</span>
+          </button>
+        </div>
+
+        <!-- Social Sub-tabs: Feed vs Friends -->
+        <div class="flex rounded-full p-1" style="background: var(--chip-bg);">
+          <button onclick="setSocialTab('feed')" id="socialTabFeed" class="pill-btn flex-1 py-1.5 text-xs font-bold rounded-full transition-all" style="background: var(--purple); color: white;">Live Feed</button>
+          <button onclick="setSocialTab('friends')" id="socialTabFriends" class="pill-btn flex-1 py-1.5 text-xs font-bold rounded-full transition-all" style="color: var(--text-secondary);">Friends & Requests (<span id="friendReqBadge">1</span>)</button>
+        </div>
+
+        <!-- Post Status Box -->
+        <div class="quest-card p-4">
+          <div class="flex space-x-2.5">
+            <div id="socialUserAvatar" class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs text-white shrink-0" style="background: var(--purple);">JD</div>
+            <input id="socialPostInput" type="text" placeholder="Share quest progress or cheer your party..." class="w-full px-3 py-2 rounded-xl text-xs border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+            <button onclick="publishSocialPost()" class="pill-btn px-3.5 py-1.5 text-xs font-bold text-white shrink-0" style="background: var(--purple);">Post</button>
+          </div>
+        </div>
+
+        <!-- Feed Container -->
+        <div id="socialFeedContainer" class="space-y-3.5"></div>
+
+        <!-- Friends Manager Container (Hidden by default) -->
+        <div id="socialFriendsContainer" class="space-y-3.5 hidden">
+          <!-- Pending Requests -->
+          <div class="quest-card p-4">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="font-bold text-sm" style="color: var(--text-primary);">Incoming Friend Requests</h3>
+              <span class="chip px-2 py-0.5 text-[10px] font-bold text-white" style="background: var(--red);">1 Pending</span>
+            </div>
+            <div class="p-3 rounded-2xl flex items-center justify-between" style="background: var(--chip-bg);">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background: #FF9500;">AL</div>
+                <div>
+                  <span class="text-xs font-bold block" style="color: var(--text-primary);">Aria Luna</span>
+                  <span class="text-[10px]" style="color: var(--text-secondary);">Level 5 • Dawn Patrol</span>
+                </div>
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <button onclick="acceptFriendRequest('AL')" class="pill-btn px-3 py-1 text-[11px] font-bold text-white" style="background: var(--green);">Accept</button>
+                <button onclick="rejectFriendRequest('AL')" class="pill-btn px-2.5 py-1 text-[11px] font-semibold" style="background: var(--chip-bg); color: var(--text-secondary);">Decline</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Friend Search -->
+          <div class="quest-card p-4">
+            <h3 class="font-bold text-sm mb-2" style="color: var(--text-primary);">Add Adventurer Friend</h3>
+            <div class="flex space-x-2 mb-3">
+              <input id="searchFriendInput" type="text" placeholder="Enter username or Legend ID..." class="w-full px-3 py-2 rounded-xl text-xs border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+              <button onclick="searchAndAddFriend()" class="pill-btn px-3.5 py-1.5 text-xs font-bold text-white shrink-0" style="background: var(--blue);">Send Request</button>
+            </div>
+          </div>
+
+          <!-- Active Friends List -->
+          <div class="quest-card p-4">
+            <h3 class="font-bold text-sm mb-3" style="color: var(--text-primary);">Active Party Friends</h3>
+            <div class="space-y-2.5" id="friendsActiveList">
+              <div class="flex items-center justify-between p-2.5 rounded-xl" style="background: var(--chip-bg);">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background: #30D158;">AK</div>
+                  <div>
+                    <span class="text-xs font-bold block" style="color: var(--text-primary);">Alex King</span>
+                    <span class="text-[10px]" style="color: var(--green);">Online • Level 6</span>
+                  </div>
+                </div>
+                <span class="text-xs font-bold" style="color: var(--gold);">🔥 12d</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-xl" style="background: var(--chip-bg);">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background: #0A84FF;">MR</div>
+                  <div>
+                    <span class="text-xs font-bold block" style="color: var(--text-primary);">Maya Ray</span>
+                    <span class="text-[10px]" style="color: var(--text-secondary);">2h ago • Level 4</span>
+                  </div>
+                </div>
+                <span class="text-xs font-bold" style="color: var(--gold);">🔥 5d</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 5: PROFILE (User, Category Rings, Logout)  -->
+      <!-- ============================================== -->
+      <section id="tab-profile" class="space-y-4 hidden">
+        <article class="quest-card p-5 text-center">
+          <div id="profileAvatarBig" class="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-2xl font-black text-white shadow-md relative" style="background: var(--purple);">
+            JD
+            <div class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-amber-400 border-2 border-[var(--bg-surface)] flex items-center justify-center text-[11px]">
+              ⭐
+            </div>
+          </div>
+
+          <h2 class="text-xl font-bold mt-3" id="profileName" style="color: var(--text-primary);">John Doe</h2>
+          <p class="text-xs font-medium" id="profileSubtitle" style="color: var(--text-secondary);">Grandmaster Scholar • Level 4</p>
+          <span class="text-[11px] font-mono block mt-0.5" id="profileEmail" style="color: var(--purple);">alex@questrings.com</span>
+
+          <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t" style="border-color: var(--border-subtle);">
+            <div>
+              <span class="text-xs" style="color: var(--text-secondary);">Total XP</span>
+              <span class="text-base font-extrabold block" id="profileXp" style="color: var(--purple);">1,750</span>
+            </div>
+            <div>
+              <span class="text-xs" style="color: var(--text-secondary);">Streak</span>
+              <span class="text-base font-extrabold block" id="profileStreak" style="color: var(--gold);">7 Days</span>
+            </div>
+            <div>
+              <span class="text-xs" style="color: var(--text-secondary);">Rank</span>
+              <span class="text-base font-extrabold block" style="color: var(--green);">#2 Global</span>
+            </div>
+          </div>
+
+          <div class="flex space-x-2 mt-4">
+            <button onclick="openModal('publicProfileModal')" class="pill-btn flex-1 py-2 text-xs font-bold border transition-colors" style="border-color: var(--border-subtle); color: var(--text-primary);">
+              Public Profile
+            </button>
+            <button onclick="handleLogout()" class="pill-btn flex-1 py-2 text-xs font-bold text-white transition-colors" style="background: var(--purple);">
+              Log Out
+            </button>
+          </div>
+        </article>
+
+        <!-- Circular Category XP Breakdown Card -->
+        <article class="quest-card p-5">
+          <h3 class="font-bold text-sm mb-3" style="color: var(--text-primary);">Category XP Breakdown</h3>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span style="color: var(--red);">Vitality (Physical)</span>
+                <span>580 XP (33%)</span>
+              </div>
+              <div class="w-full h-2 rounded-full overflow-hidden" style="background: var(--chip-bg);">
+                <div class="h-full rounded-full" style="background: var(--red); width: 33%;"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span style="color: var(--green);">Intellect (Mental & Skill)</span>
+                <span>820 XP (47%)</span>
+              </div>
+              <div class="w-full h-2 rounded-full overflow-hidden" style="background: var(--chip-bg);">
+                <div class="h-full rounded-full" style="background: var(--green); width: 47%;"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span style="color: var(--blue);">Discipline (Habit & Focus)</span>
+                <span>350 XP (20%)</span>
+              </div>
+              <div class="w-full h-2 rounded-full overflow-hidden" style="background: var(--chip-bg);">
+                <div class="h-full rounded-full" style="background: var(--blue); width: 20%;"></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Danger Zone Card -->
+        <article class="quest-card p-5" style="border: 1px solid rgba(255, 69, 58, 0.3);">
+          <span class="text-xs font-bold uppercase tracking-wider" style="color: var(--red);">Danger Zone</span>
+          <h3 class="font-bold text-sm mt-1" style="color: var(--text-primary);">Delete Account & Wipe Data</h3>
+          <p class="text-xs mt-1 mb-3" style="color: var(--text-secondary);">Permanently removes all progress, stats, room memberships, and room database records.</p>
+          <button onclick="openModal('deleteAccountModal')" class="pill-btn px-4 py-2 text-xs font-bold text-white" style="background: var(--red);">
+            Delete Account
+          </button>
+        </article>
+      </section>
+
+    </main>
+
+    <!-- App Bottom Bar (QuestBottomBar: 5 Primary Tabs) -->
+    <nav id="appBottomNav" class="absolute bottom-0 inset-x-0 border-t py-2 px-3 flex justify-around items-center z-20 backdrop-blur-md" style="background: var(--bg-surface); border-color: var(--border-subtle);">
+      <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center p-1 transition-colors" style="color: var(--purple);">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2z"/></svg>
+        <span class="text-[10px] font-bold mt-0.5">Home</span>
+      </button>
+
+      <button onclick="switchTab('tasks')" id="nav-tasks" class="flex flex-col items-center p-1 transition-colors" style="color: var(--text-secondary);">
+        <div class="relative">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full text-[8px] font-bold text-white flex items-center justify-center" style="background: var(--blue);" id="taskBadgeCount">3</span>
+        </div>
+        <span class="text-[10px] font-semibold mt-0.5">Tasks</span>
+      </button>
+
+      <button onclick="switchTab('rooms')" id="nav-rooms" class="flex flex-col items-center p-1 transition-colors" style="color: var(--text-secondary);">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        <span class="text-[10px] font-semibold mt-0.5">Rooms</span>
+      </button>
+
+      <button onclick="switchTab('social')" id="nav-social" class="flex flex-col items-center p-1 transition-colors" style="color: var(--text-secondary);">
+        <div class="relative">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full" style="background: var(--red);"></span>
+        </div>
+        <span class="text-[10px] font-semibold mt-0.5">Social</span>
+      </button>
+
+      <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center p-1 transition-colors" style="color: var(--text-secondary);">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span class="text-[10px] font-semibold mt-0.5">Profile</span>
+      </button>
+    </nav>
+
+    <!-- ============================================== -->
+    <!-- MODAL: ROOM DETAIL VIEW (Interactive)          -->
+    <!-- ============================================== -->
+    <div id="roomDetailModal" class="absolute inset-0 z-50 flex flex-col justify-end hidden" style="background: var(--modal-bg);">
+      <div class="sheet-up rounded-t-3xl p-5 max-h-[90%] overflow-y-auto" style="background: var(--bg-surface); border-top: 1px solid var(--border-subtle);">
+        <div class="w-12 h-1.5 rounded-full bg-neutral-600 mx-auto mb-4"></div>
+
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <span class="chip px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider" id="detailRoomCategory" style="background: var(--purple-muted); color: var(--purple);">GUILD CHAMBER</span>
+            <h3 class="text-xl font-bold mt-1" id="detailRoomTitle" style="color: var(--text-primary);">Code Spartans ⚔️</h3>
+            <p class="text-xs mt-0.5" id="detailRoomDesc" style="color: var(--text-secondary);">Daily 2 hours deep focus coding quest. No distractions.</p>
+          </div>
+          <button onclick="closeModal('roomDetailModal')" class="w-8 h-8 rounded-full flex items-center justify-center font-bold" style="background: var(--chip-bg); color: var(--text-primary);">✕</button>
+        </div>
+
+        <!-- Room Code & Share Pill -->
+        <div class="p-3 rounded-2xl flex items-center justify-between mb-4" style="background: var(--chip-bg);">
+          <div>
+            <span class="text-[10px] uppercase font-bold block" style="color: var(--text-secondary);">Join Code</span>
+            <span class="font-mono text-base font-extrabold tracking-widest" id="detailRoomCode" style="color: var(--purple);">SPART4</span>
+          </div>
+          <button onclick="copyRoomCode()" class="pill-btn px-3 py-1.5 text-xs font-bold" style="background: var(--purple-muted); color: var(--purple);">
+            Copy Code
+          </button>
+        </div>
+
+        <!-- Room Sub-Tabs: Assignments vs Members -->
+        <div class="flex rounded-full p-1 mb-3" style="background: var(--chip-bg);">
+          <button onclick="setRoomDetailSubTab('challenges')" id="subTabChallenges" class="pill-btn flex-1 py-1.5 text-xs font-bold rounded-full transition-all" style="background: var(--purple); color: white;">Challenges (<span id="roomChallengesCount">2</span>)</button>
+          <button onclick="setRoomDetailSubTab('members')" id="subTabMembers" class="pill-btn flex-1 py-1.5 text-xs font-bold rounded-full transition-all" style="color: var(--text-secondary);">Party Members (<span id="roomMembersCount">5</span>)</button>
+        </div>
+
+        <!-- Challenges / Assignments in Room -->
+        <div id="roomChallengesContainer" class="space-y-2.5"></div>
+
+        <!-- Members in Room (Hidden initially) -->
+        <div id="roomMembersContainer" class="space-y-2.5 hidden"></div>
+
+        <!-- Room Actions (Leave Room / Manage) -->
+        <div class="pt-4 border-t mt-4 flex space-x-2" style="border-color: var(--border-subtle);">
+          <button onclick="leaveCurrentRoom()" class="pill-btn flex-1 py-2.5 text-xs font-bold text-red-500 border border-red-500/30">
+            Leave Chamber
+          </button>
+          <button onclick="closeModal('roomDetailModal'); switchTab('social');" class="pill-btn flex-1 py-2.5 text-xs font-bold text-white" style="background: var(--purple);">
+            Chamber Social Feed
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL: CREATE ROOM SHEET                       -->
+    <!-- ============================================== -->
+    <div id="createRoomModal" class="absolute inset-0 z-50 flex flex-col justify-end hidden" style="background: var(--modal-bg);">
+      <div class="sheet-up rounded-t-3xl p-5" style="background: var(--bg-surface); border-top: 1px solid var(--border-subtle);">
+        <div class="w-12 h-1.5 rounded-full bg-neutral-600 mx-auto mb-4"></div>
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-base font-bold" style="color: var(--text-primary);">Forge New Chamber</h3>
+          <button onclick="closeModal('createRoomModal')" class="text-xs font-bold" style="color: var(--text-secondary);">Cancel</button>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs font-semibold block mb-1" style="color: var(--text-secondary);">Chamber Name</label>
+            <input id="newRoomTitle" type="text" placeholder="e.g. Iron Will Marathon, Python Masters" class="w-full px-3 py-2.5 rounded-xl text-sm border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+          </div>
+          <div>
+            <label class="text-xs font-semibold block mb-1" style="color: var(--text-secondary);">Description / Mission</label>
+            <input id="newRoomDesc" type="text" placeholder="Daily goal description..." class="w-full px-3 py-2.5 rounded-xl text-sm border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+          </div>
+          <div>
+            <label class="text-xs font-semibold block mb-1" style="color: var(--text-secondary);">Category Focus</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="selectNewRoomCat('VITALITY')" id="roomCatVitality" class="chip p-2 text-center text-xs font-bold border-2" style="background: var(--red-muted); color: var(--red); border-color: var(--red);">Vitality</button>
+              <button onclick="selectNewRoomCat('INTELLECT')" id="roomCatIntellect" class="chip p-2 text-center text-xs font-bold border" style="background: var(--chip-bg); color: var(--text-secondary); border-color: var(--border-subtle);">Intellect</button>
+              <button onclick="selectNewRoomCat('DISCIPLINE')" id="roomCatDiscipline" class="chip p-2 text-center text-xs font-bold border" style="background: var(--chip-bg); color: var(--text-secondary); border-color: var(--border-subtle);">Discipline</button>
+            </div>
+          </div>
+          <button onclick="saveNewRoom()" class="pill-btn w-full py-3 text-sm font-bold text-white mt-2" style="background: var(--purple);">
+            Create Chamber
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL: JOIN ROOM SHEET                         -->
+    <!-- ============================================== -->
+    <div id="joinRoomModal" class="absolute inset-0 z-50 flex flex-col justify-end hidden" style="background: var(--modal-bg);">
+      <div class="sheet-up rounded-t-3xl p-5" style="background: var(--bg-surface); border-top: 1px solid var(--border-subtle);">
+        <div class="w-12 h-1.5 rounded-full bg-neutral-600 mx-auto mb-4"></div>
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-base font-bold" style="color: var(--text-primary);">Join Quest Chamber</h3>
+          <button onclick="closeModal('joinRoomModal')" class="text-xs font-bold" style="color: var(--text-secondary);">Cancel</button>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs font-semibold block mb-1" style="color: var(--text-secondary);">Enter 6-Character Room Code</label>
+            <input id="joinRoomCodeInput" type="text" maxlength="6" placeholder="e.g. SPART4, DAWN05" class="w-full px-3 py-2.5 rounded-xl text-center font-mono font-bold text-lg uppercase tracking-widest border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+          </div>
+          <button onclick="submitJoinRoom()" class="pill-btn w-full py-3 text-sm font-bold text-white" style="background: var(--blue);">
+            Join Chamber
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL: LEADERBOARD MODAL BOTTOM SHEET          -->
+    <!-- ============================================== -->
+    <div id="leaderboardModal" class="absolute inset-0 z-50 flex flex-col justify-end hidden" style="background: var(--modal-bg);">
+      <div class="sheet-up rounded-t-3xl p-5 max-h-[85%] overflow-y-auto" style="background: var(--bg-surface); border-top: 1px solid var(--border-subtle);">
+        <div class="w-12 h-1.5 rounded-full bg-neutral-600 mx-auto mb-4"></div>
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="text-lg font-bold" style="color: var(--text-primary);">Leaderboard 🏆</h3>
+            <p class="text-xs" style="color: var(--text-secondary);">Dual-Scope Rankings with Top 3 Medals</p>
+          </div>
+          <button onclick="closeModal('leaderboardModal')" class="w-8 h-8 rounded-full flex items-center justify-center font-bold" style="background: var(--chip-bg); color: var(--text-primary);">✕</button>
+        </div>
+
+        <div class="flex rounded-full p-1 mb-3" style="background: var(--chip-bg);">
+          <button onclick="setLeaderboardScope('friends')" id="lbScopeFriendsBtn" class="pill-btn flex-1 py-1.5 text-xs font-bold rounded-full transition-all" style="background: var(--purple); color: white;">Friends Only</button>
+          <button onclick="setLeaderboardScope('global')" id="lbScopeGlobalBtn" class="pill-btn flex-1 py-1.5 text-xs font-bold rounded-full transition-all" style="color: var(--text-secondary);">Global</button>
+        </div>
+
+        <div class="flex space-x-1.5 mb-4 text-xs font-semibold">
+          <button onclick="setLbTime('week')" id="lbTimeWeek" class="chip px-3 py-1 rounded-full" style="background: var(--purple); color: white;">This Week</button>
+          <button onclick="setLbTime('month')" id="lbTimeMonth" class="chip px-3 py-1 rounded-full" style="background: var(--chip-bg); color: var(--text-secondary);">This Month</button>
+          <button onclick="setLbTime('all')" id="lbTimeAll" class="chip px-3 py-1 rounded-full" style="background: var(--chip-bg); color: var(--text-secondary);">All-Time</button>
+        </div>
+
+        <div class="space-y-2.5" id="leaderboardList">
+          <div class="flex items-center justify-between p-3 rounded-2xl" style="background: var(--chip-bg);">
+            <div class="flex items-center space-x-3">
+              <span class="text-lg">🥇</span>
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm" style="background: #30D158;">AK</div>
+              <div>
+                <span class="text-sm font-bold block" style="color: var(--text-primary);">Alex King</span>
+                <span class="text-[11px]" style="color: var(--text-secondary);">Level 6 • 12d Streak</span>
+              </div>
+            </div>
+            <span class="text-sm font-extrabold" style="color: var(--gold);">2,450 XP</span>
+          </div>
+
+          <div class="flex items-center justify-between p-3 rounded-2xl border-2" style="background: var(--purple-muted); border-color: var(--purple);">
+            <div class="flex items-center space-x-3">
+              <span class="text-lg">🥈</span>
+              <div id="lbUserAvatar" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm" style="background: var(--purple);">JD</div>
+              <div>
+                <div class="flex items-center space-x-1">
+                  <span class="text-sm font-bold" id="lbUserName" style="color: var(--text-primary);">John Doe</span>
+                  <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded" style="background: var(--purple); color: white;">YOU</span>
+                </div>
+                <span class="text-[11px]" style="color: var(--text-secondary);">Level 4 • 7d Streak</span>
+              </div>
+            </div>
+            <span class="text-sm font-extrabold" id="lbUserXp" style="color: var(--purple);">1,750 XP</span>
+          </div>
+
+          <div class="flex items-center justify-between p-3 rounded-2xl" style="background: var(--chip-bg);">
+            <div class="flex items-center space-x-3">
+              <span class="text-lg">🥉</span>
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm" style="background: #0A84FF;">MR</div>
+              <div>
+                <span class="text-sm font-bold block" style="color: var(--text-primary);">Maya Ray</span>
+                <span class="text-[11px]" style="color: var(--text-secondary);">Level 4 • 5d Streak</span>
+              </div>
+            </div>
+            <span class="text-sm font-extrabold" style="color: var(--text-secondary);">1,420 XP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL: CREATE HABIT SHEET                      -->
+    <!-- ============================================== -->
+    <div id="addHabitModal" class="absolute inset-0 z-50 flex flex-col justify-end hidden" style="background: var(--modal-bg);">
+      <div class="sheet-up rounded-t-3xl p-5" style="background: var(--bg-surface); border-top: 1px solid var(--border-subtle);">
+        <div class="w-12 h-1.5 rounded-full bg-neutral-600 mx-auto mb-4"></div>
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-base font-bold" style="color: var(--text-primary);">Add Habit Quest</h3>
+          <button onclick="closeModal('addHabitModal')" class="text-xs font-bold" style="color: var(--text-secondary);">Cancel</button>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs font-semibold block mb-1" style="color: var(--text-secondary);">Quest Title</label>
+            <input id="newHabitTitle" type="text" placeholder="e.g. 100 Pushups, Read 20 pages" class="w-full px-3 py-2.5 rounded-xl text-sm border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+          </div>
+          <div>
+            <label class="text-xs font-semibold block mb-1" style="color: var(--text-secondary);">Target Category</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="selectNewHabitCat('VITALITY')" id="catSelectVitality" class="chip p-2 text-center text-xs font-bold border-2" style="background: var(--red-muted); color: var(--red); border-color: var(--red);">Vitality</button>
+              <button onclick="selectNewHabitCat('INTELLECT')" id="catSelectIntellect" class="chip p-2 text-center text-xs font-bold border" style="background: var(--chip-bg); color: var(--text-secondary); border-color: var(--border-subtle);">Intellect</button>
+              <button onclick="selectNewHabitCat('DISCIPLINE')" id="catSelectDiscipline" class="chip p-2 text-center text-xs font-bold border" style="background: var(--chip-bg); color: var(--text-secondary); border-color: var(--border-subtle);">Discipline</button>
+            </div>
+          </div>
+          <button onclick="saveNewHabit()" class="pill-btn w-full py-3 text-sm font-bold text-white mt-2" style="background: var(--purple);">
+            Create Habit (+25 Base XP)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL: CREATE TASK SHEET                       -->
+    <!-- ============================================== -->
+    <div id="addTaskModal" class="absolute inset-0 z-50 flex flex-col justify-end hidden" style="background: var(--modal-bg);">
+      <div class="sheet-up rounded-t-3xl p-5" style="background: var(--bg-surface); border-top: 1px solid var(--border-subtle);">
+        <div class="w-12 h-1.5 rounded-full bg-neutral-600 mx-auto mb-4"></div>
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-base font-bold" style="color: var(--text-primary);">Create Task</h3>
+          <button onclick="closeModal('addTaskModal')" class="text-xs font-bold" style="color: var(--text-secondary);">Cancel</button>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs font-semibold block mb-1" style="color: var(--text-secondary);">Task Description</label>
+            <input id="newTaskTitle" type="text" placeholder="e.g. Submit CS project PR" class="w-full px-3 py-2.5 rounded-xl text-sm border outline-none" style="background: var(--chip-bg); border-color: var(--border-subtle); color: var(--text-primary);">
+          </div>
+          <div class="flex space-x-2">
+            <button onclick="selectTaskPriority('HIGH')" id="prioHigh" class="chip flex-1 py-1.5 text-xs font-bold border-2" style="background: var(--red-muted); color: var(--red); border-color: var(--red);">High</button>
+            <button onclick="selectTaskPriority('MEDIUM')" id="prioMed" class="chip flex-1 py-1.5 text-xs font-bold border" style="background: var(--chip-bg); color: var(--text-secondary); border-color: var(--border-subtle);">Medium</button>
+            <button onclick="selectTaskPriority('LOW')" id="prioLow" class="chip flex-1 py-1.5 text-xs font-bold border" style="background: var(--chip-bg); color: var(--text-secondary); border-color: var(--border-subtle);">Normal</button>
+          </div>
+          <button onclick="saveNewTask()" class="pill-btn w-full py-3 text-sm font-bold text-white mt-2" style="background: var(--purple);">
+            Add Task
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL: PUBLIC PROFILE MODAL                    -->
+    <!-- ============================================== -->
+    <div id="publicProfileModal" class="absolute inset-0 z-50 flex flex-col justify-end hidden" style="background: var(--modal-bg);">
+      <div class="sheet-up rounded-t-3xl p-5 max-h-[85%] overflow-y-auto" style="background: var(--bg-surface); border-top: 1px solid var(--border-subtle);">
+        <div class="w-12 h-1.5 rounded-full bg-neutral-600 mx-auto mb-4"></div>
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-base font-bold" style="color: var(--text-primary);">Public Profile Preview</h3>
+          <button onclick="closeModal('publicProfileModal')" class="text-xs font-bold" style="color: var(--text-secondary);">Close</button>
+        </div>
+        <div class="p-4 rounded-2xl mb-3 text-center" style="background: var(--chip-bg);">
+          <div id="pubModalAvatar" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-bold text-white shadow-md mb-2" style="background: var(--purple);">JD</div>
+          <h4 class="font-bold text-base" id="pubModalName" style="color: var(--text-primary);">John Doe</h4>
+          <span class="text-xs" id="pubModalSub" style="color: var(--text-secondary);">Adventurer • Active on QuestRings</span>
+          <div class="flex justify-center space-x-2 mt-3">
+            <span class="chip px-3 py-1 text-xs font-bold" style="background: var(--purple-muted); color: var(--purple);">Top 5% Habit Closer</span>
+            <span class="chip px-3 py-1 text-xs font-bold" style="background: var(--gold-muted); color: var(--gold);">7d Streak</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL: DELETE ACCOUNT CONFIRM                  -->
+    <!-- ============================================== -->
+    <div id="deleteAccountModal" class="absolute inset-0 z-50 flex items-center justify-center p-6 hidden" style="background: var(--modal-bg);">
+      <div class="rounded-3xl p-5 max-w-sm w-full shadow-2xl" style="background: var(--bg-surface); border: 1px solid var(--border-subtle);">
+        <h3 class="text-lg font-bold" style="color: var(--red);">Permanently Delete Account?</h3>
+        <p class="text-xs mt-2" style="color: var(--text-secondary);">This action will clear your local Room database, remove your user profile, and erase all XP, streaks, and rings. This cannot be undone.</p>
+        <div class="flex space-x-2 mt-5">
+          <button onclick="closeModal('deleteAccountModal')" class="pill-btn flex-1 py-2 text-xs font-semibold" style="background: var(--chip-bg); color: var(--text-primary);">Cancel</button>
+          <button onclick="confirmAccountDeletion()" class="pill-btn flex-1 py-2 text-xs font-bold text-white" style="background: var(--red);">Confirm Delete</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Interactive JavaScript Engine -->
+  <script>
+    // System Accounts Registry
+    const registry = {
+      accounts: [
+        {
+          id: 'u1',
+          name: 'John Doe',
+          email: 'alex@questrings.com',
+          password: 'password123',
+          avatarColor: '#7D5CFF',
+          level: 4,
+          xp: 1750,
+          streak: 7
+        },
+        {
+          id: 'u2',
+          name: 'Alex King',
+          email: 'alexking@questrings.com',
+          password: 'password123',
+          avatarColor: '#30D158',
+          level: 6,
+          xp: 2450,
+          streak: 12
+        }
+      ]
+    };
+
+    // State Model
+    const state = {
+      currentUser: registry.accounts[0],
+      theme: 'dark',
+      currentTab: 'home',
+      roomsFilter: 'my',
+      socialFilter: 'feed',
+      lastToggleTime: 0,
+      activeRoomDetailId: null,
+      selectedAvatarColor: '#7D5CFF',
+      selectedNewHabitCategory: 'VITALITY',
+      selectedNewRoomCategory: 'VITALITY',
+      selectedTaskPriority: 'HIGH',
+      habits: [
+        { id: 'h1', title: 'Morning Cardio 30 mins', category: 'VITALITY', done: true, icon: '🏃' },
+        { id: 'h2', title: 'Hydration 2.5 Liters', category: 'VITALITY', done: true, icon: '💧' },
+        { id: 'h3', title: 'Post-workout Stretching', category: 'VITALITY', done: false, icon: '🧘' },
+        { id: 'h4', title: 'Read 20 pages Architecture', category: 'INTELLECT', done: true, icon: '📖' },
+        { id: 'h5', title: 'LeetCode Daily Problem', category: 'INTELLECT', done: true, icon: '💻' },
+        { id: 'h6', title: 'Deep Work 90min Block', category: 'DISCIPLINE', done: true, icon: '⏱️' },
+        { id: 'h7', title: 'Zero Social Media before Noon', category: 'DISCIPLINE', done: false, icon: '📵' }
+      ],
+      tasks: [
+        { id: 't1', title: 'Submit Systems Design assignment', priority: 'HIGH', due: '2h remaining', late: true, done: false },
+        { id: 't2', title: 'Review pull request for Compose Refactor', priority: 'MEDIUM', due: 'Today at 6:00 PM', late: false, done: false },
+        { id: 't3', title: 'Guild Sync with Code Spartans', priority: 'LOW', due: 'Tomorrow 10:00 AM', late: false, done: false },
+        { id: 't4', title: 'Weekly grocery prep & meal planning', priority: 'LOW', due: 'Done', late: false, done: true }
+      ],
+      rooms: [
+        {
+          id: 'r1',
+          title: 'Code Spartans ⚔️',
+          category: 'INTELLECT',
+          desc: 'Daily 2 hours deep focus coding quest. No distractions.',
+          isMyRoom: true,
+          code: 'SPART4',
+          members: [
+            { name: 'John Doe', role: 'Leader', color: '#7D5CFF' },
+            { name: 'Alex King', role: 'Officer', color: '#30D158' },
+            { name: 'Sam K.', role: 'Member', color: '#FF453A' },
+            { name: 'Maya Ray', role: 'Member', color: '#0A84FF' },
+            { name: 'Elena R.', role: 'Member', color: '#8E8E93' }
+          ],
+          challenges: [
+            { id: 'rc1', title: 'Solve 1 Medium Graph / DP algorithm', done: true, xp: 50 },
+            { id: 'rc2', title: 'Complete 90 mins clean pomodoro code block', done: false, xp: 75 }
+          ],
+          xpPool: 8450,
+          progressPct: 72
+        },
+        {
+          id: 'r2',
+          title: 'Dawn Patrol 5:00 AM 🌅',
+          category: 'VITALITY',
+          desc: 'Wake before the sun, 20-min run, and hydration checks.',
+          isMyRoom: true,
+          code: 'DAWN05',
+          members: [
+            { name: 'John Doe', role: 'Leader', color: '#7D5CFF' },
+            { name: 'Aria Luna', role: 'Member', color: '#FF9500' },
+            { name: 'Torin Vance', role: 'Member', color: '#FF453A' }
+          ],
+          challenges: [
+            { id: 'rc3', title: 'Alarm out of bed at 5:00 AM sharp', done: true, xp: 40 },
+            { id: 'rc4', title: 'Outdoor sunrise 2.5k run', done: true, xp: 60 }
+          ],
+          xpPool: 4200,
+          progressPct: 90
+        },
+        {
+          id: 'r3',
+          title: 'Iron Will Reading 📚',
+          category: 'DISCIPLINE',
+          desc: 'Read at least 20 pages of non-fiction book every evening.',
+          isMyRoom: false,
+          code: 'READ20',
+          members: [
+            { name: 'Maya Ray', role: 'Leader', color: '#0A84FF' },
+            { name: 'John Doe', role: 'Member', color: '#7D5CFF' },
+            { name: 'Elena R.', role: 'Member', color: '#AF52DE' }
+          ],
+          challenges: [
+            { id: 'rc5', title: 'Read 20 pages with zero phone notifications', done: false, xp: 35 }
+          ],
+          xpPool: 12100,
+          progressPct: 45
+        },
+        {
+          id: 'r4',
+          title: 'Cold Plunge & Breathwork ❄️',
+          category: 'VITALITY',
+          desc: '3-minute morning ice bath or cold shower ritual.',
+          isMyRoom: false,
+          code: 'COLD03',
+          members: [
+            { name: 'Alex King', role: 'Leader', color: '#30D158' },
+            { name: 'John Doe', role: 'Member', color: '#7D5CFF' }
+          ],
+          challenges: [
+            { id: 'rc6', title: '3 minutes freezing cold water immersion', done: false, xp: 50 }
+          ],
+          xpPool: 3600,
+          progressPct: 60
+        }
+      ],
+      socialFeed: [
+        {
+          id: 'sf1',
+          author: 'Alex King',
+          avatarColor: '#30D158',
+          initials: 'AK',
+          time: '12m ago',
+          content: 'Closed all 3 Concentric Rings for the 12th consecutive day! Streak bonus applied! 💥',
+          xp: 325,
+          reactions: { '👏': { count: 6, reacted: true }, '🔥': { count: 9, reacted: false }, '⚡': { count: 4, reacted: true } }
+        },
+        {
+          id: 'sf2',
+          author: 'Sam K.',
+          avatarColor: '#FF453A',
+          initials: 'SK',
+          time: '45m ago',
+          content: 'Crushed the 5:00 AM outdoor cardio with Dawn Patrol chamber! 🌅',
+          xp: 60,
+          reactions: { '👏': { count: 3, reacted: false }, '🔥': { count: 8, reacted: true }, '⚡': { count: 2, reacted: false } }
+        },
+        {
+          id: 'sf3',
+          author: 'Maya Ray',
+          avatarColor: '#0A84FF',
+          initials: 'MR',
+          time: '2h ago',
+          content: 'Completed task: System Architecture Refactoring ahead of deadline! 🎯',
+          xp: 100,
+          reactions: { '👏': { count: 4, reacted: false }, '🔥': { count: 3, reacted: false }, '⚡': { count: 5, reacted: false } }
+        }
+      ]
+    };
+
+    // Live clock update
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const el = document.getElementById('currentTime');
+      if (el) el.innerText = `${hours}:${minutes}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Theme Switcher
+    function toggleTheme() {
+      const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
+      setTheme(nextTheme);
+    }
+
+    function setTheme(theme) {
+      state.theme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.getElementById('themeIconSun').classList.add('hidden');
+        document.getElementById('themeIconMoon').classList.remove('hidden');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('themeIconSun').classList.remove('hidden');
+        document.getElementById('themeIconMoon').classList.add('hidden');
+      }
+    }
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      state.currentTab = tabId;
+      ['home', 'tasks', 'rooms', 'social', 'profile'].forEach(t => {
+        const sec = document.getElementById(`tab-${t}`);
+        const nav = document.getElementById(`nav-${t}`);
+        if (t === tabId) {
+          sec.classList.remove('hidden');
+          nav.style.color = 'var(--purple)';
+        } else {
+          sec.classList.add('hidden');
+          nav.style.color = 'var(--text-secondary)';
+        }
+      });
+      document.getElementById('screenBody').scrollTop = 0;
+    }
+
+    // Auth Controller
+    function setAuthTab(tab) {
+      const loginTab = document.getElementById('authTabLogin');
+      const regTab = document.getElementById('authTabRegister');
+      const loginForm = document.getElementById('loginForm');
+      const regForm = document.getElementById('registerForm');
+
+      if (tab === 'login') {
+        loginTab.style.background = 'var(--purple)';
+        loginTab.style.color = 'white';
+        regTab.style.background = 'transparent';
+        regTab.style.color = 'var(--text-secondary)';
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+      } else {
+        regTab.style.background = 'var(--purple)';
+        regTab.style.color = 'white';
+        loginTab.style.background = 'transparent';
+        loginTab.style.color = 'var(--text-secondary)';
+        regForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      }
+    }
+
+    function renderRecognizedAccounts() {
+      const container = document.getElementById('recognizedAccountsList');
+      container.innerHTML = registry.accounts.map(acc => `
+        <div onclick="loginAsAccount('${acc.id}')" class="flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]" style="background: var(--chip-bg);">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background: ${acc.avatarColor};">
+              ${acc.name.split(' ').map(n=>n[0]).join('')}
+            </div>
+            <div>
+              <span class="text-xs font-bold block" style="color: var(--text-primary);">${acc.name}</span>
+              <span class="text-[10px]" style="color: var(--text-secondary);">${acc.email} • Level ${acc.level}</span>
+            </div>
+          </div>
+          <span class="text-xs font-bold" style="color: var(--purple);">1-Tap Login →</span>
+        </div>
+      `).join('');
+    }
+
+    function selectAvatarColor(color) {
+      state.selectedAvatarColor = color;
+      const buttons = document.querySelectorAll('#regAvatarColorRow button');
+      buttons.forEach(btn => {
+        if (btn.getAttribute('data-color') === color) {
+          btn.className = 'w-8 h-8 rounded-full border-2 border-white ring-2 ring-[var(--purple)]';
+        } else {
+          btn.className = 'w-8 h-8 rounded-full';
+        }
+      });
+    }
+
+    function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const existing = registry.accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+      if (existing) {
+        state.currentUser = existing;
+      } else {
+        // Fallback login
+        const initials = email.slice(0, 2).toUpperCase();
+        state.currentUser = {
+          id: 'u' + Date.now(),
+          name: email.split('@')[0],
+          email: email,
+          avatarColor: '#7D5CFF',
+          level: 1,
+          xp: 100,
+          streak: 1
+        };
+        registry.accounts.push(state.currentUser);
+      }
+      applySessionUser();
+    }
+
+    function loginAsAccount(accId) {
+      const found = registry.accounts.find(a => a.id === accId);
+      if (found) {
+        state.currentUser = found;
+        applySessionUser();
+      }
+    }
+
+    function handleRegister() {
+      const name = document.getElementById('regDisplayName').value.trim() || 'New Adventurer';
+      const email = document.getElementById('regEmail').value.trim() || `legend${Date.now()}@questrings.com`;
+      const pass = document.getElementById('regPassword').value.trim();
+
+      const newAccount = {
+        id: 'u' + Date.now(),
+        name: name,
+        email: email,
+        password: pass || 'password123',
+        avatarColor: state.selectedAvatarColor || '#7D5CFF',
+        level: 1,
+        xp: 50,
+        streak: 1
+      };
+
+      registry.accounts.unshift(newAccount);
+      state.currentUser = newAccount;
+      applySessionUser();
+      showXpToast(`Welcome, Legend ${name}! 🎉`);
+    }
+
+    function handleLogout() {
+      state.currentUser = null;
+      document.getElementById('authView').classList.remove('hidden');
+      document.getElementById('mainAppView').classList.add('hidden');
+      document.getElementById('appBottomNav').classList.add('hidden');
+      renderRecognizedAccounts();
+      showXpToast('Signed out of QuestRings 👋');
+    }
+
+    function applySessionUser() {
+      const user = state.currentUser;
+      if (!user) return;
+
+      document.getElementById('authView').classList.add('hidden');
+      document.getElementById('mainAppView').classList.remove('hidden');
+      document.getElementById('appBottomNav').classList.remove('hidden');
+
+      const initials = user.name.split(' ').map(n=>n[0]).join('').slice(0, 2).toUpperCase();
+
+      // Update Header
+      document.getElementById('headerUserSub').innerText = `Level ${user.level} Adventurer • ${user.name}`;
+      const mark = document.getElementById('headerAvatarMark');
+      mark.style.background = user.avatarColor;
+      mark.innerText = initials;
+
+      // Update Profile
+      document.getElementById('profileName').innerText = user.name;
+      document.getElementById('profileSubtitle').innerText = `Grandmaster Scholar • Level ${user.level}`;
+      document.getElementById('profileEmail').innerText = user.email;
+      document.getElementById('profileXp').innerText = user.xp.toLocaleString();
+      document.getElementById('profileStreak').innerText = `${user.streak} Days`;
+      const bigAvatar = document.getElementById('profileAvatarBig');
+      bigAvatar.style.background = user.avatarColor;
+      bigAvatar.childNodes[0].nodeValue = initials + ' ';
+
+      // Update Social User Avatar
+      const socAv = document.getElementById('socialUserAvatar');
+      socAv.style.background = user.avatarColor;
+      socAv.innerText = initials;
+
+      // Update Leaderboard entry
+      document.getElementById('lbUserName').innerText = user.name;
+      document.getElementById('lbUserAvatar').style.background = user.avatarColor;
+      document.getElementById('lbUserAvatar').innerText = initials;
+      document.getElementById('lbUserXp').innerText = `${user.xp.toLocaleString()} XP`;
+
+      // Update Today's XP
+      document.getElementById('todayXpVal').innerText = user.xp.toLocaleString();
+      document.getElementById('streakCount').innerText = `${user.streak}d`;
+
+      switchTab('home');
+      updateRings();
+      renderHabits();
+      renderTasks();
+      renderRooms();
+      renderSocialFeed();
+    }
+
+    // Concentric Ring Calculations
+    function updateRings() {
+      const calcCatProgress = (cat) => {
+        const catHabits = state.habits.filter(h => h.category === cat);
+        if (catHabits.length === 0) return 0;
+        const doneCount = catHabits.filter(h => h.done).length;
+        return doneCount / catHabits.length;
+      };
+
+      const vitProg = calcCatProgress('VITALITY');
+      const intProg = calcCatProgress('INTELLECT');
+      const disProg = calcCatProgress('DISCIPLINE');
+
+      const vitCircum = 2 * Math.PI * 82; // 515.22
+      const intCircum = 2 * Math.PI * 64; // 402.12
+      const disCircum = 2 * Math.PI * 46; // 289.02
+
+      document.getElementById('ringVitality').style.strokeDashoffset = vitCircum * (1 - vitProg);
+      document.getElementById('ringIntellect').style.strokeDashoffset = intCircum * (1 - intProg);
+      document.getElementById('ringDiscipline').style.strokeDashoffset = disCircum * (1 - disProg);
+
+      document.getElementById('labelVitalityPct').innerText = `${Math.round(vitProg * 100)}%`;
+      document.getElementById('labelIntellectPct').innerText = `${Math.round(intProg * 100)}%`;
+      document.getElementById('labelDisciplinePct').innerText = `${Math.round(disProg * 100)}%`;
+
+      const overall = Math.round(((vitProg + intProg + disProg) / 3) * 100);
+      document.getElementById('centerScoreVal').innerText = `${overall}%`;
+      document.getElementById('momentumTodayVal').innerText = `${overall}%`;
+
+      let closedCount = 0;
+      if (vitProg === 1) closedCount++;
+      if (intProg === 1) closedCount++;
+      if (disProg === 1) closedCount++;
+      document.getElementById('ringsClosedBadge').innerText = `${closedCount} / 3 Closed`;
+    }
+
+    // Render Habits
+    let currentHabitFilter = 'all';
+    function renderHabits() {
+      const container = document.getElementById('habitsListContainer');
+      const filtered = currentHabitFilter === 'all' 
+        ? state.habits 
+        : state.habits.filter(h => h.category === currentHabitFilter);
+
+      container.innerHTML = filtered.map(h => {
+        const catColor = h.category === 'VITALITY' ? 'var(--red)' : h.category === 'INTELLECT' ? 'var(--green)' : 'var(--blue)';
+        const catMuted = h.category === 'VITALITY' ? 'var(--red-muted)' : h.category === 'INTELLECT' ? 'var(--green-muted)' : 'var(--blue-muted)';
+
+        return `
+          <div onclick="toggleHabit('${h.id}')" class="flex items-center justify-between p-3.5 rounded-2xl cursor-pointer transition-all active:scale-[0.98]" style="background: var(--chip-bg);">
+            <div class="flex items-center space-x-3">
+              <span class="text-xl">${h.icon}</span>
+              <div>
+                <span class="text-sm font-bold block ${h.done ? 'line-through opacity-60' : ''}" style="color: var(--text-primary);">${h.title}</span>
+                <span class="chip px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider inline-block mt-0.5" style="background: ${catMuted}; color: ${catColor};">${h.category}</span>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-lg flex items-center justify-center border-2 transition-all" style="border-color: ${h.done ? 'var(--purple)' : 'var(--border-subtle)'}; background: ${h.done ? 'var(--purple)' : 'transparent'};">
+              ${h.done ? '<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleHabit(id) {
+      const now = Date.now();
+      if (now - state.lastToggleTime < 300) return;
+      state.lastToggleTime = now;
+
+      const habit = state.habits.find(h => h.id === id);
+      if (!habit) return;
+
+      habit.done = !habit.done;
+
+      if (habit.done) {
+        const bonus = Math.floor(25 * 1.5);
+        if (state.currentUser) state.currentUser.xp += bonus;
+        showXpToast(`+${bonus} XP (×1.5 Streak Bonus!) 🔥`);
+      } else {
+        if (state.currentUser) state.currentUser.xp = Math.max(0, state.currentUser.xp - 25);
+      }
+
+      const totalXp = state.currentUser ? state.currentUser.xp : 1750;
+      document.getElementById('todayXpVal').innerText = totalXp.toLocaleString();
+      const pct = Math.min(100, Math.round((totalXp / 2000) * 100));
+      document.getElementById('todayXpBar').style.width = `${pct}%`;
+
+      updateRings();
+      renderHabits();
+    }
+
+    function filterHabits(cat) {
+      currentHabitFilter = cat;
+      ['all', 'VITALITY', 'INTELLECT', 'DISCIPLINE'].forEach(c => {
+        const btn = document.getElementById(`filter-${c}`);
+        if (c === cat) {
+          btn.style.background = 'var(--purple)';
+          btn.style.color = 'white';
+        } else {
+          btn.style.background = 'var(--chip-bg)';
+          btn.style.color = 'var(--text-secondary)';
+        }
+      });
+      renderHabits();
+    }
+
+    // Render Tasks
+    function renderTasks() {
+      const container = document.getElementById('tasksListContainer');
+      const activeCount = state.tasks.filter(t => !t.done).length;
+      document.getElementById('taskBadgeCount').innerText = activeCount;
+
+      container.innerHTML = state.tasks.map(t => {
+        const prioColor = t.priority === 'HIGH' ? 'var(--red)' : t.priority === 'MEDIUM' ? 'var(--gold)' : 'var(--blue)';
+        const prioMuted = t.priority === 'HIGH' ? 'var(--red-muted)' : t.priority === 'MEDIUM' ? 'var(--gold-muted)' : 'var(--blue-muted)';
+
+        return `
+          <div class="quest-card p-4 transition-all" style="${t.late && !t.done ? 'border: 1.5px solid var(--red);' : ''}">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start space-x-3">
+                <button onclick="toggleTask('${t.id}')" class="w-5 h-5 rounded-md mt-0.5 border-2 flex items-center justify-center transition-all shrink-0" style="border-color: ${t.done ? 'var(--green)' : 'var(--border-subtle)'}; background: ${t.done ? 'var(--green)' : 'transparent'};">
+                  ${t.done ? '<svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' : ''}
+                </button>
+                <div>
+                  <h4 class="text-sm font-bold ${t.done ? 'line-through opacity-60' : ''}" style="color: var(--text-primary);">${t.title}</h4>
+                  <div class="flex items-center space-x-2 mt-1.5">
+                    <span class="chip px-2 py-0.5 text-[10px] font-bold" style="background: ${prioMuted}; color: ${prioColor};">${t.priority}</span>
+                    <span class="text-xs font-medium" style="color: var(--text-secondary);">${t.due}</span>
+                    ${t.late && !t.done ? '<span class="chip px-1.5 py-0.5 text-[10px] font-bold" style="background: var(--red-muted); color: var(--red);">Late</span>' : ''}
+                  </div>
+                </div>
+              </div>
+              <button onclick="deleteTask('${t.id}')" class="text-neutral-500 hover:text-red-500 p-1" title="Delete Task">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleTask(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (task) {
+        task.done = !task.done;
+        if (task.done) showXpToast('+50 XP Task Completed! 🎯');
+        renderTasks();
+      }
+    }
+
+    function deleteTask(id) {
+      state.tasks = state.tasks.filter(t => t.id !== id);
+      renderTasks();
+    }
+
+    function setTaskView(view) {
+      const listBtn = document.getElementById('taskViewListBtn');
+      const calBtn = document.getElementById('taskViewCalBtn');
+      const calStrip = document.getElementById('calendarAgendaStrip');
+
+      if (view === 'calendar') {
+        calStrip.classList.remove('hidden');
+        calBtn.style.background = 'var(--purple)';
+        calBtn.style.color = 'white';
+        listBtn.style.background = 'transparent';
+        listBtn.style.color = 'var(--text-secondary)';
+      } else {
+        calStrip.classList.add('hidden');
+        listBtn.style.background = 'var(--purple)';
+        listBtn.style.color = 'white';
+        calBtn.style.background = 'transparent';
+        calBtn.style.color = 'var(--text-secondary)';
+      }
+    }
+
+    // ==============================================
+    // ROOMS CONTROLLER (Open, Create, Join)
+    // ==============================================
+    function setRoomsTab(tab) {
+      state.roomsFilter = tab;
+      const myBtn = document.getElementById('roomsTabMy');
+      const joinedBtn = document.getElementById('roomsTabJoined');
+      if (tab === 'my') {
+        myBtn.style.background = 'var(--purple)';
+        myBtn.style.color = 'white';
+        joinedBtn.style.background = 'transparent';
+        joinedBtn.style.color = 'var(--text-secondary)';
+      } else {
+        joinedBtn.style.background = 'var(--purple)';
+        joinedBtn.style.color = 'white';
+        myBtn.style.background = 'transparent';
+        myBtn.style.color = 'var(--text-secondary)';
+      }
+      renderRooms();
+    }
+
+    function renderRooms() {
+      const container = document.getElementById('roomsListContainer');
+      const myRooms = state.rooms.filter(r => r.isMyRoom);
+      const joinedRooms = state.rooms.filter(r => !r.isMyRoom);
+
+      document.getElementById('myRoomsCount').innerText = myRooms.length;
+      document.getElementById('joinedRoomsCount').innerText = joinedRooms.length;
+
+      const activeList = state.roomsFilter === 'my' ? myRooms : joinedRooms;
+
+      if (activeList.length === 0) {
+        container.innerHTML = `
+          <div class="quest-card p-6 text-center">
+            <span class="text-3xl block mb-2">🛡️</span>
+            <h4 class="font-bold text-sm" style="color: var(--text-primary);">No Chambers Found</h4>
+            <p class="text-xs mt-1" style="color: var(--text-secondary);">Forge a new party chamber or enter a join code.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = activeList.map(r => {
+        const catColor = r.category === 'VITALITY' ? 'var(--red)' : r.category === 'INTELLECT' ? 'var(--green)' : 'var(--blue)';
+        const catMuted = r.category === 'VITALITY' ? 'var(--red-muted)' : r.category === 'INTELLECT' ? 'var(--green-muted)' : 'var(--blue-muted)';
+
+        const memberAvatars = r.members.slice(0, 4).map(m => `
+          <div class="w-8 h-8 rounded-full border-2 border-[var(--bg-surface)] flex items-center justify-center text-xs font-bold text-white shadow-sm" style="background: ${m.color};">
+            ${m.name.split(' ').map(n=>n[0]).join('')}
+          </div>
+        `).join('');
+
+        const extraCount = r.members.length > 4 ? `<div class="w-8 h-8 rounded-full border-2 border-[var(--bg-surface)] flex items-center justify-center text-[10px] font-bold text-white shadow-sm" style="background: #8E8E93;">+${r.members.length - 4}</div>` : '';
+
+        return `
+          <article onclick="openRoomDetail('${r.id}')" class="quest-card p-5 cursor-pointer transition-all hover:opacity-95 active:scale-[0.99]">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <span class="chip px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider" style="background: ${catMuted}; color: ${catColor};">${r.category}</span>
+                <h3 class="text-base font-bold mt-1" style="color: var(--text-primary);">${r.title}</h3>
+              </div>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background: var(--chip-bg); color: var(--text-secondary);">${r.members.length} Members</span>
+            </div>
+            <p class="text-xs mb-3" style="color: var(--text-secondary);">${r.desc}</p>
+
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex -space-x-2">
+                ${memberAvatars}
+                ${extraCount}
+              </div>
+              <span class="text-xs font-bold" style="color: ${catColor};">${r.xpPool.toLocaleString()} XP Pool</span>
+            </div>
+
+            <div class="w-full h-2 rounded-full overflow-hidden" style="background: var(--chip-bg);">
+              <div class="h-full rounded-full" style="background: ${catColor}; width: ${r.progressPct}%;"></div>
+            </div>
+            <div class="flex justify-between items-center mt-2 text-[11px]" style="color: var(--text-secondary);">
+              <span>Chamber Objective Progress</span>
+              <span class="font-bold">${r.progressPct}% • Tap to Open Chamber →</span>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // Room Detail Sheet View
+    function openRoomDetail(roomId) {
+      state.activeRoomDetailId = roomId;
+      const room = state.rooms.find(r => r.id === roomId);
+      if (!room) return;
+
+      document.getElementById('detailRoomTitle').innerText = room.title;
+      document.getElementById('detailRoomDesc').innerText = room.desc;
+      document.getElementById('detailRoomCategory').innerText = room.category;
+      document.getElementById('detailRoomCode').innerText = room.code;
+
+      document.getElementById('roomChallengesCount').innerText = room.challenges.length;
+      document.getElementById('roomMembersCount').innerText = room.members.length;
+
+      renderRoomDetailContent(room);
+      setRoomDetailSubTab('challenges');
+      openModal('roomDetailModal');
+    }
+
+    function renderRoomDetailContent(room) {
+      // Render Challenges
+      const chalContainer = document.getElementById('roomChallengesContainer');
+      chalContainer.innerHTML = room.challenges.map(c => `
+        <div onclick="toggleRoomChallenge('${c.id}')" class="p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all active:scale-[0.98]" style="background: var(--chip-bg);">
+          <div class="flex items-center space-x-3">
+            <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all" style="border-color: ${c.done ? 'var(--green)' : 'var(--border-subtle)'}; background: ${c.done ? 'var(--green)' : 'transparent'};">
+              ${c.done ? '<svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' : ''}
+            </div>
+            <div>
+              <span class="text-xs font-bold block ${c.done ? 'line-through opacity-60' : ''}" style="color: var(--text-primary);">${c.title}</span>
+              <span class="text-[10px]" style="color: var(--purple);">+${c.xp} Chamber XP</span>
+            </div>
+          </div>
+          <span class="chip px-2 py-0.5 text-[10px] font-bold" style="background: var(--purple-muted); color: var(--purple);">${c.done ? 'COMPLETED' : 'PENDING'}</span>
+        </div>
+      `).join('');
+
+      // Render Members
+      const memContainer = document.getElementById('roomMembersContainer');
+      memContainer.innerHTML = room.members.map(m => `
+        <div class="p-3 rounded-2xl flex items-center justify-between" style="background: var(--chip-bg);">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm" style="background: ${m.color};">
+              ${m.name.split(' ').map(n=>n[0]).join('')}
+            </div>
+            <div>
+              <span class="text-xs font-bold block" style="color: var(--text-primary);">${m.name}</span>
+              <span class="text-[10px]" style="color: var(--text-secondary);">${m.role}</span>
+            </div>
+          </div>
+          <span class="chip px-2 py-0.5 text-[10px] font-bold" style="background: var(--purple-muted); color: var(--purple);">${m.role}</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleRoomChallenge(chalId) {
+      const room = state.rooms.find(r => r.id === state.activeRoomDetailId);
+      if (!room) return;
+      const chal = room.challenges.find(c => c.id === chalId);
+      if (chal) {
+        chal.done = !chal.done;
+        if (chal.done) {
+          room.xpPool += chal.xp;
+          if (state.currentUser) state.currentUser.xp += chal.xp;
+          showXpToast(`+${chal.xp} Chamber XP! ⚔️`);
+        }
+        renderRoomDetailContent(room);
+        renderRooms();
+      }
+    }
+
+    function setRoomDetailSubTab(sub) {
+      const chalBtn = document.getElementById('subTabChallenges');
+      const memBtn = document.getElementById('subTabMembers');
+      const chalContainer = document.getElementById('roomChallengesContainer');
+      const memContainer = document.getElementById('roomMembersContainer');
+
+      if (sub === 'challenges') {
+        chalBtn.style.background = 'var(--purple)';
+        chalBtn.style.color = 'white';
+        memBtn.style.background = 'transparent';
+        memBtn.style.color = 'var(--text-secondary)';
+        chalContainer.classList.remove('hidden');
+        memContainer.classList.add('hidden');
+      } else {
+        memBtn.style.background = 'var(--purple)';
+        memBtn.style.color = 'white';
+        chalBtn.style.background = 'transparent';
+        chalBtn.style.color = 'var(--text-secondary)';
+        memContainer.classList.remove('hidden');
+        chalContainer.classList.add('hidden');
+      }
+    }
+
+    function copyRoomCode() {
+      const code = document.getElementById('detailRoomCode').innerText;
+      navigator.clipboard?.writeText(code);
+      showXpToast(`Code ${code} copied to clipboard! 📋`);
+    }
+
+    function leaveCurrentRoom() {
+      state.rooms = state.rooms.filter(r => r.id !== state.activeRoomDetailId);
+      closeModal('roomDetailModal');
+      renderRooms();
+      showXpToast('You departed the Chamber.');
+    }
+
+    // Create Room
+    function selectNewRoomCat(cat) {
+      state.selectedNewRoomCategory = cat;
+      ['VITALITY', 'INTELLECT', 'DISCIPLINE'].forEach(c => {
+        const id = `roomCat${c.charAt(0) + c.slice(1).toLowerCase()}`;
+        const el = document.getElementById(id);
+        el.style.borderWidth = c === cat ? '2px' : '1px';
+      });
+    }
+
+    function saveNewRoom() {
+      const title = document.getElementById('newRoomTitle').value.trim();
+      const desc = document.getElementById('newRoomDesc').value.trim() || 'Daily chamber quests & focus.';
+      if (!title) return;
+
+      const randomCode = 'QR' + Math.floor(1000 + Math.random() * 9000);
+      const newRoom = {
+        id: 'r' + Date.now(),
+        title: title,
+        category: state.selectedNewRoomCategory,
+        desc: desc,
+        isMyRoom: true,
+        code: randomCode,
+        members: [
+          {
+            name: state.currentUser ? state.currentUser.name : 'John Doe',
+            role: 'Leader',
+            color: state.currentUser ? state.currentUser.avatarColor : '#7D5CFF'
+          }
+        ],
+        challenges: [
+          { id: 'rc' + Date.now(), title: 'First Chamber Quest milestone', done: false, xp: 50 }
+        ],
+        xpPool: 100,
+        progressPct: 15
+      };
+
+      state.rooms.unshift(newRoom);
+      document.getElementById('newRoomTitle').value = '';
+      document.getElementById('newRoomDesc').value = '';
+      closeModal('createRoomModal');
+      setRoomsTab('my');
+      showXpToast(`Chamber "${title}" forged! 🛡️`);
+    }
+
+    // Join Room
+    function submitJoinRoom() {
+      const code = document.getElementById('joinRoomCodeInput').value.trim().toUpperCase();
+      if (!code) return;
+
+      const found = state.rooms.find(r => r.code === code);
+      if (found) {
+        found.isMyRoom = false;
+        if (!found.members.some(m => m.name === (state.currentUser?.name || 'John Doe'))) {
+          found.members.push({
+            name: state.currentUser ? state.currentUser.name : 'John Doe',
+            role: 'Member',
+            color: state.currentUser ? state.currentUser.avatarColor : '#7D5CFF'
+          });
+        }
+        closeModal('joinRoomModal');
+        setRoomsTab('joined');
+        showXpToast(`Joined ${found.title}! 🗝️`);
+        openRoomDetail(found.id);
+      } else {
+        showXpToast('Room code not found. Try SPART4, DAWN05 or READ20.');
+      }
+    }
+
+    // ==============================================
+    // SOCIALS CONTROLLER (Feed, Reactions, Friends)
+    // ==============================================
+    function setSocialTab(tab) {
+      state.socialFilter = tab;
+      const feedBtn = document.getElementById('socialTabFeed');
+      const friendsBtn = document.getElementById('socialTabFriends');
+      const feedContainer = document.getElementById('socialFeedContainer');
+      const friendsContainer = document.getElementById('socialFriendsContainer');
+
+      if (tab === 'feed') {
+        feedBtn.style.background = 'var(--purple)';
+        feedBtn.style.color = 'white';
+        friendsBtn.style.background = 'transparent';
+        friendsBtn.style.color = 'var(--text-secondary)';
+        feedContainer.classList.remove('hidden');
+        friendsContainer.classList.add('hidden');
+      } else {
+        friendsBtn.style.background = 'var(--purple)';
+        friendsBtn.style.color = 'white';
+        feedBtn.style.background = 'transparent';
+        feedBtn.style.color = 'var(--text-secondary)';
+        friendsContainer.classList.remove('hidden');
+        feedContainer.classList.add('hidden');
+      }
+    }
+
+    function renderSocialFeed() {
+      const container = document.getElementById('socialFeedContainer');
+      container.innerHTML = state.socialFeed.map(item => {
+        const reactionButtons = Object.entries(item.reactions).map(([emoji, r]) => `
+          <button onclick="toggleReaction('${item.id}', '${emoji}')" class="pill-btn px-2.5 py-1 text-xs flex items-center space-x-1 border transition-all ${r.reacted ? 'bounce-active' : ''}" style="background: ${r.reacted ? 'var(--purple-muted)' : 'var(--chip-bg)'}; border-color: ${r.reacted ? 'var(--purple)' : 'transparent'}; color: ${r.reacted ? 'var(--purple)' : 'var(--text-secondary)'};">
+            <span>${emoji}</span>
+            <span class="font-bold text-[11px]">${r.count}</span>
+          </button>
+        `).join('');
+
+        return `
+          <article class="quest-card p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm" style="background: ${item.avatarColor};">
+                  ${item.initials}
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold" style="color: var(--text-primary);">${item.author}</h4>
+                  <span class="text-[10px]" style="color: var(--text-secondary);">${item.time}</span>
+                </div>
+              </div>
+              <span class="chip px-2 py-0.5 text-[10px] font-bold" style="background: var(--purple-muted); color: var(--purple);">+${item.xp} XP</span>
+            </div>
+
+            <p class="text-xs mb-3 font-medium" style="color: var(--text-primary);">${item.content}</p>
+
+            <div class="flex items-center space-x-1.5 pt-2 border-t" style="border-color: var(--border-subtle);">
+              ${reactionButtons}
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function toggleReaction(itemId, emoji) {
+      const item = state.socialFeed.find(f => f.id === itemId);
+      if (!item || !item.reactions[emoji]) return;
+
+      const r = item.reactions[emoji];
+      r.reacted = !r.reacted;
+      r.count += r.reacted ? 1 : -1;
+
+      renderSocialFeed();
+      if (r.reacted) showXpToast(`Reacted with ${emoji}!`);
+    }
+
+    function publishSocialPost() {
+      const input = document.getElementById('socialPostInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      const user = state.currentUser || { name: 'John Doe', avatarColor: '#7D5CFF' };
+      state.socialFeed.unshift({
+        id: 'sf' + Date.now(),
+        author: user.name,
+        avatarColor: user.avatarColor,
+        initials: user.name.split(' ').map(n=>n[0]).join('').slice(0, 2).toUpperCase(),
+        time: 'Just now',
+        content: val,
+        xp: 25,
+        reactions: { '👏': { count: 1, reacted: true }, '🔥': { count: 0, reacted: false }, '⚡': { count: 0, reacted: false } }
+      });
+      input.value = '';
+      renderSocialFeed();
+      showXpToast('Achievement shared with community! 🌐');
+    }
+
+    function acceptFriendRequest(id) {
+      document.getElementById('friendReqBadge').innerText = '0';
+      showXpToast('Friend request accepted! 🤝');
+      setSocialTab('friends');
+    }
+
+    function rejectFriendRequest(id) {
+      document.getElementById('friendReqBadge').innerText = '0';
+      showXpToast('Request declined.');
+    }
+
+    function searchAndAddFriend() {
+      const query = document.getElementById('searchFriendInput').value.trim();
+      if (!query) return;
+      document.getElementById('searchFriendInput').value = '';
+      showXpToast(`Friend request sent to "${query}"! ✉️`);
+    }
+
+    // Modal Helpers
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // Habit Modal logic
+    function selectNewHabitCat(cat) {
+      state.selectedNewHabitCategory = cat;
+      ['VITALITY', 'INTELLECT', 'DISCIPLINE'].forEach(c => {
+        const id = `catSelect${c.charAt(0) + c.slice(1).toLowerCase()}`;
+        const el = document.getElementById(id);
+        el.style.borderWidth = c === cat ? '2px' : '1px';
+      });
+    }
+
+    function saveNewHabit() {
+      const input = document.getElementById('newHabitTitle');
+      const title = input.value.trim();
+      if (!title) return;
+
+      const icons = { VITALITY: '💪', INTELLECT: '💡', DISCIPLINE: '🎯' };
+      state.habits.push({
+        id: 'h' + Date.now(),
+        title: title,
+        category: state.selectedNewHabitCategory,
+        done: false,
+        icon: icons[state.selectedNewHabitCategory] || '⭐'
+      });
+      input.value = '';
+      closeModal('addHabitModal');
+      updateRings();
+      renderHabits();
+      showXpToast('Quest created! 📜');
+    }
+
+    // Task Modal logic
+    function selectTaskPriority(prio) {
+      state.selectedTaskPriority = prio;
+      ['HIGH', 'MEDIUM', 'LOW'].forEach(p => {
+        const id = p === 'HIGH' ? 'prioHigh' : p === 'MEDIUM' ? 'prioMed' : 'prioLow';
+        const el = document.getElementById(id);
+        el.style.borderWidth = p === prio ? '2px' : '1px';
+      });
+    }
+
+    function saveNewTask() {
+      const input = document.getElementById('newTaskTitle');
+      const title = input.value.trim();
+      if (!title) return;
+
+      state.tasks.unshift({
+        id: 't' + Date.now(),
+        title: title,
+        priority: state.selectedTaskPriority,
+        due: 'Due in 24h',
+        late: false,
+        done: false
+      });
+      input.value = '';
+      closeModal('addTaskModal');
+      renderTasks();
+      showXpToast('Task scheduled! 📅');
+    }
+
+    // Leaderboard controls
+    function setLeaderboardScope(scope) {
+      const friendsBtn = document.getElementById('lbScopeFriendsBtn');
+      const globalBtn = document.getElementById('lbScopeGlobalBtn');
+      if (scope === 'friends') {
+        friendsBtn.style.background = 'var(--purple)';
+        friendsBtn.style.color = 'white';
+        globalBtn.style.background = 'transparent';
+        globalBtn.style.color = 'var(--text-secondary)';
+      } else {
+        globalBtn.style.background = 'var(--purple)';
+        globalBtn.style.color = 'white';
+        friendsBtn.style.background = 'transparent';
+        friendsBtn.style.color = 'var(--text-secondary)';
+      }
+    }
+
+    function setLbTime(time) {
+      ['week', 'month', 'all'].forEach(t => {
+        const btn = document.getElementById(`lbTime${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (t === time) {
+          btn.style.background = 'var(--purple)';
+          btn.style.color = 'white';
+        } else {
+          btn.style.background = 'var(--chip-bg)';
+          btn.style.color = 'var(--text-secondary)';
+        }
+      });
+    }
+
+    function confirmAccountDeletion() {
+      closeModal('deleteAccountModal');
+      if (state.currentUser) {
+        registry.accounts = registry.accounts.filter(a => a.id !== state.currentUser.id);
+      }
+      handleLogout();
+      showXpToast('Account & local Room DB wiped 🗑️');
+    }
+
+    function showXpToast(msg) {
+      const container = document.getElementById('xpToastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'xp-toast px-4 py-2 rounded-full text-xs font-bold text-white shadow-xl flex items-center space-x-1.5';
+      toast.style.background = 'var(--purple)';
+      toast.innerText = msg;
+      container.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 1900);
+    }
+
+    // Initialize
+    applySessionUser();
+  </script>
+</body>
+</html>

@@ -66,7 +66,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onNavigateToShowcase: () -> Unit,
+    onNavigateToShowcase: () -> Unit = {},
     onNavigateToTasks: () -> Unit = {},
     onNavigateToRooms: () -> Unit = {},
     onNavigateToSocial: () -> Unit = {},
@@ -223,15 +223,6 @@ fun HomeScreen(
                                 backgroundColor = QuestTheme.colors.disciplineBlue.copy(alpha = 0.12f),
                                 borderColor = QuestTheme.colors.disciplineBlue.copy(alpha = 0.35f),
                                 onClick = onNavigateToStats
-                            )
-
-                            QuestChip(
-                                text = "Gallery",
-                                icon = Icons.Default.ColorLens,
-                                textColor = QuestTheme.colors.levelPurple,
-                                backgroundColor = QuestTheme.colors.levelPurple.copy(alpha = 0.12f),
-                                borderColor = QuestTheme.colors.levelPurple.copy(alpha = 0.35f),
-                                onClick = onNavigateToShowcase
                             )
                         }
                     }

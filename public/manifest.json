@@ -1,0 +1,19 @@
+{
+  "name": "QuestRings - RPG Habit Tracker",
+  "short_name": "QuestRings",
+  "description": "Gamified Habit & Productivity Tracking with Dynamic Concentric Rings",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "health", "lifestyle"]
+}
