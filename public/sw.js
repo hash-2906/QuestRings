@@ -1,4 +1,4 @@
-const CACHE_NAME = 'questrings-v1';
+const CACHE_NAME = 'questrings-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
